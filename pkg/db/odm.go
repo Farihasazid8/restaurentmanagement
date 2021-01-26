@@ -270,7 +270,6 @@ func (dm *dmManager) DeleteOneByObjId(collectionName string, objId primitive.Obj
 		filter,
 		update,
 	)
-	fmt.Println("odm2 error", err)
 	return err
 }
 
@@ -317,8 +316,6 @@ func (dm *dmManager) PermanentDeleteOneByStrId(collectionName string, strId stri
 
 func (dm *dmManager) DropCollection(collectionName string) error {
 	coll := dm.db.Collection(collectionName)
-
 	err := coll.Drop(dm.ctx)
-
 	return err
 }

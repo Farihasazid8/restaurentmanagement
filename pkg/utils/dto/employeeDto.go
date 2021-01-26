@@ -5,11 +5,10 @@ import (
 )
 
 type EmployeeDto struct {
-	ID       primitive.ObjectID `json:"id" bson:"_id"`
-	Name     string             `json:"username"`
-	DobStr   string             `json:"userDob"`
-	Email    string             `json:"empEmail"`
-	Salary   int                `json:"empSalary"`
-	Position string             `json:"empPosition"`
-	Status   string             `json:"status"`
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	Name      string             `json:"employeeName" bson:"employeeName,omitempty"`
+	DobString string             `json:"employeeDob" bson:"employeeDob,omitempty"`
+	Email     string             `json:"employeeEmail" bson:"employeeEmail,omitempty"`
+	Salary    int                `json:"employeeSalary" bson:"employeeSalary,omitempty"`
+	Position  string             `json:"employeePosition" bson:"employeePosition,omitempty"`
 }
