@@ -224,7 +224,6 @@ func (dm *dmManager) FindOneByObjId(collectionName string, objId primitive.Objec
 
 func (dm *dmManager) FindOneByStrId(collectionName string, strId string, objType reflect.Type) interface{} {
 	objId, err := primitive.ObjectIDFromHex(strId)
-	fmt.Println("Hello from odm findbyString", objId)
 	if err != nil {
 		log.Println("[ERROR] Converting Str ID to Obj ID:", err.Error())
 		return nil

@@ -1,5 +1,4 @@
 package model
-
 import (
 	"fmt"
 	"github.com/labstack/echo"
@@ -16,7 +15,7 @@ import (
 type Ingredient struct {
 	ID       primitive.ObjectID `json:"id" bson:"_id"`
 	Name     string             `json:"ingredientName" bson:"ingredientName,omitempty"`
-	Quantity float32            `json:"quantity" bson:"quantity,omitempty"`
+	Quantity int                `json:"quantity" bson:"quantity,omitempty"`
 	Status   string             `json:"status" bson:"status,omitempty"`
 }
 
@@ -34,7 +33,11 @@ func (ingredient Ingredient) Save(context echo.Context) error {
 		log.Println("Input Error:", err.Error())
 		return common.GenerateErrorResponse(context, nil, "Failed to Bind Input!")
 	}
-
+	filter := bson.D{{"ingredientName", formData.Name}}
+	response := db.GetDmManager().FindOne(collection.Ingredients, filter, reflect.TypeOf(Ingredient{}))
+	if response != nil {
+		return common.GenerateErrorResponse(context, nil, "Ingredient already exists")
+	}
 	var payload = Ingredient{
 		ID:       primitive.NewObjectID(),
 		Name:     formData.Name,

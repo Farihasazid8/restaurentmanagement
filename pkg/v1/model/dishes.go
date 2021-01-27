@@ -12,14 +12,13 @@ import (
 	"restaurentManagement/pkg/db/collection"
 	"restaurentManagement/pkg/utils/dto"
 )
-
 type Dishes struct {
-	ID     primitive.ObjectID `json:"id" bson:"_id"`
-	Name   string             `json:"dishName" bson:"dishName,omitempty"`
-	Price  float32            `json:"dishPrice" bson:"dishPrice,omitempty"`
-	Status string             `json:"status" bson:"status,omitempty"`
+	ID                  primitive.ObjectID `json:"id" bson:"_id"`
+	Name                string             `json:"dishName" bson:"dishName,omitempty"`
+	Price               float32            `json:"dishPrice" bson:"dishPrice,omitempty"`
+	RequiredIngredients map[string]int     `json:"requiredIngredients" bson:"requiredIngredients,omitempty"`
+	Status              string             `json:"status" bson:"status,omitempty"`
 }
-
 func DishRouter(g *echo.Group) {
 	dish := Dishes{}
 	g.POST("", dish.Save)
@@ -34,12 +33,23 @@ func (dish Dishes) Save(context echo.Context) error {
 		log.Println("Input Error:", err.Error())
 		return common.GenerateErrorResponse(context, nil, "Failed to Bind Input!")
 	}
-
+	filter := bson.D{{"dishName", formData.Name}}
+	response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
+	if response != nil {
+		return common.GenerateErrorResponse(context, nil, "Ingredient already exists")
+	}
+	ingredientMap := make(map[string]int)
+	for _, value := range formData.RequiredIngredients {
+		fmt.Println("value", value)
+		ingredientMap[value.Name] = value.Quantity
+	}
+	fmt.Println("Map ", ingredientMap)
 	var payload = Dishes{
-		ID:     primitive.NewObjectID(),
-		Name:   formData.Name,
-		Price:  formData.Price,
-		Status: "V",
+		ID:                  primitive.NewObjectID(),
+		Name:                formData.Name,
+		Price:               formData.Price,
+		RequiredIngredients: ingredientMap,
+		Status:              "V",
 	}
 	insertData, err := db.GetDmManager().InsertSingleDocument(collection.Dishes, payload)
 	if err != nil {

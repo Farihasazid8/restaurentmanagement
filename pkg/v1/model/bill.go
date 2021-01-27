@@ -1,5 +1,4 @@
 package model
-
 import (
 	"fmt"
 	"github.com/labstack/echo"
@@ -13,19 +12,17 @@ import (
 	"restaurentManagement/pkg/utils/dto"
 	"time"
 )
-
 func BillRouter(g *echo.Group) {
 	bill := Bill{}
 	g.POST("", bill.Save)
 	g.GET("", bill.FindAll)
 	g.GET("/:id", bill.GetById)
 }
-
 type Bill struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	CustomerName  string             `json:"customerName" bson:"customerName,omitempty"`
-	BillingAmount float32            `json:"billingAmount" bson:"billingAmount,omitempty"`
 	BillingTime   time.Time          `json:"billingTime" bson:"billingTime,omitempty"`
+	OrderedDishes []string           `json:"orderedDishes" bson:"orderedDishes,omitempty"`
+	BillingAmount float32            `json:"billingAmount" bson:"billingAmount,omitempty"`
 	Status        string             `json:"status" bson:"status,omitempty"`
 }
 
@@ -35,12 +32,45 @@ func (bill Bill) Save(context echo.Context) error {
 		log.Println("Input Error:", err.Error())
 		return common.GenerateErrorResponse(context, nil, "Failed to Bind Input!")
 	}
+	var totalBillAmount float32 = 0.0
+	for _, value := range formData.OrderedDishes {
+		var objId, _ = primitive.ObjectIDFromHex(value)
+		filter := bson.D{{"_id", objId}}
+		response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
+		if response != nil {
+			existingDish := *response.(*Dishes)
+			totalBillAmount += existingDish.Price
+			//update ingredient quantity
+			fmt.Println(existingDish.RequiredIngredients)
+			fmt.Println("length" ,len(existingDish.RequiredIngredients))
+			for key, value := range existingDish.RequiredIngredients {
+				fmt.Println("Key:", key, "Value:", value)
+				//ingredients.UpdateQuantityByName(context, key, value)
+				filter := bson.D{{"ingredientName", key}}
+				response := db.GetDmManager().FindOne(collection.Ingredients, filter, reflect.TypeOf(Ingredient{}))
+				if response != nil {
+					existingIngredient := *response.(*Ingredient)
+					existingIngredient.Quantity -= value
 
+					UpdateData := db.GetDmManager().UpdateOneByStrId(collection.Ingredients, existingIngredient.ID.Hex(), existingIngredient)
+					fmt.Println(UpdateData)
+					if UpdateData != nil {
+						log.Println("[Error]:", UpdateData)
+						return common.GenerateErrorResponse(context, nil, "Failed!")
+					}
+				} else {
+					return common.GenerateErrorResponse(context, nil, "Ingredient does not exist")
+				}
+			}
+		}
+
+
+	}
 	var payload = Bill{
 		ID:            primitive.NewObjectID(),
-		CustomerName:  formData.CustomerName,
-		BillingAmount: formData.BillingAmount,
+		BillingAmount: totalBillAmount,
 		BillingTime:   time.Now(),
+		OrderedDishes: formData.OrderedDishes,
 		Status:        "V",
 	}
 	insertData, err := db.GetDmManager().InsertSingleDocument(collection.Bill, payload)
