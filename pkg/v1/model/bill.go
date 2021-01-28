@@ -21,11 +21,10 @@ func BillRouter(g *echo.Group) {
 type Bill struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
 	BillingTime   time.Time          `json:"billingTime" bson:"billingTime,omitempty"`
-	OrderedDishes []string           `json:"orderedDishes" bson:"orderedDishes,omitempty"`
+	OrderedDishes []Dishes           `json:"orderedDishes" bson:"orderedDishes,omitempty"`
 	BillingAmount float32            `json:"billingAmount" bson:"billingAmount,omitempty"`
 	Status        string             `json:"status" bson:"status,omitempty"`
 }
-
 func (bill Bill) Save(context echo.Context) error {
 	formData := dto.BillDto{}
 	if err := context.Bind(&formData); err != nil {
@@ -33,27 +32,28 @@ func (bill Bill) Save(context echo.Context) error {
 		return common.GenerateErrorResponse(context, nil, "Failed to Bind Input!")
 	}
 	var totalBillAmount float32 = 0.0
+	var dishObj []Dishes
+	//i := 0
 	for _, value := range formData.OrderedDishes {
 		var objId, _ = primitive.ObjectIDFromHex(value)
+		fmt.Sprintf("%T", objId)
 		filter := bson.D{{"_id", objId}}
+
 		response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
 		if response != nil {
 			existingDish := *response.(*Dishes)
+			dishObj = append(dishObj,existingDish)
+			//i++
 			totalBillAmount += existingDish.Price
 			//update ingredient quantity
-			fmt.Println(existingDish.RequiredIngredients)
-			fmt.Println("length" ,len(existingDish.RequiredIngredients))
 			for key, value := range existingDish.RequiredIngredients {
 				fmt.Println("Key:", key, "Value:", value)
-				//ingredients.UpdateQuantityByName(context, key, value)
 				filter := bson.D{{"ingredientName", key}}
 				response := db.GetDmManager().FindOne(collection.Ingredients, filter, reflect.TypeOf(Ingredient{}))
 				if response != nil {
 					existingIngredient := *response.(*Ingredient)
 					existingIngredient.Quantity -= value
-
 					UpdateData := db.GetDmManager().UpdateOneByStrId(collection.Ingredients, existingIngredient.ID.Hex(), existingIngredient)
-					fmt.Println(UpdateData)
 					if UpdateData != nil {
 						log.Println("[Error]:", UpdateData)
 						return common.GenerateErrorResponse(context, nil, "Failed!")
@@ -63,14 +63,13 @@ func (bill Bill) Save(context echo.Context) error {
 				}
 			}
 		}
-
-
 	}
+	fmt.Println(dishObj)
 	var payload = Bill{
 		ID:            primitive.NewObjectID(),
 		BillingAmount: totalBillAmount,
 		BillingTime:   time.Now(),
-		OrderedDishes: formData.OrderedDishes,
+		OrderedDishes: dishObj,
 		Status:        "V",
 	}
 	insertData, err := db.GetDmManager().InsertSingleDocument(collection.Bill, payload)
@@ -82,7 +81,6 @@ func (bill Bill) Save(context echo.Context) error {
 }
 func (bill Bill) FindAll(context echo.Context) error {
 	findAllData, err := db.GetDmManager().FindAll(collection.Bill, reflect.TypeOf(Bill{}), bson.D{{"status", "V"}}, nil, 0, -1)
-
 	if err != nil {
 		log.Println("[Error]:", err)
 		return common.GenerateErrorResponse(context, nil, "Failed!")

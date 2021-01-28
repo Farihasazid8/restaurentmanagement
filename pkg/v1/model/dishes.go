@@ -36,7 +36,7 @@ func (dish Dishes) Save(context echo.Context) error {
 	filter := bson.D{{"dishName", formData.Name}}
 	response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
 	if response != nil {
-		return common.GenerateErrorResponse(context, nil, "Ingredient already exists")
+		return common.GenerateErrorResponse(context, nil, "Dish already exists")
 	}
 	ingredientMap := make(map[string]int)
 	for _, value := range formData.RequiredIngredients {
@@ -99,12 +99,17 @@ func (dish Dishes) Update(context echo.Context) error {
 		log.Println("Input Error:", err.Error())
 		return common.GenerateErrorResponse(context, nil, "Failed to Bind Input!")
 	}
+	ingredientMap := make(map[string]int)
+	for _, value := range formData.RequiredIngredients {
+		ingredientMap[value.Name] = value.Quantity
+	}
 	filter := bson.D{{"dishName", formData.Name}}
 	response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
 	if response != nil {
 		existingUser := *response.(*Dishes)
 		existingUser.Name = formData.Name
 		existingUser.Price = formData.Price
+		existingUser.RequiredIngredients = ingredientMap
 
 		UpdateData := db.GetDmManager().UpdateOneByStrId(collection.Dishes, existingUser.ID.Hex(), existingUser)
 		fmt.Println(UpdateData)

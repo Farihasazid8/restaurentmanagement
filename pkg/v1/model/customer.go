@@ -114,13 +114,13 @@ func (customer Customer) Update(context echo.Context) error {
 	response := db.GetDmManager().FindOne(collection.Customer, filter, reflect.TypeOf(Customer{}))
 	if response != nil {
 		existingUser := *response.(*Customer)
-		var t time.Time
+		var dobTime time.Time
 		layout := "2006-01-02"
-		t, err := time.Parse(layout, formData.DobString)
+		dobTime, err := time.Parse(layout, formData.DobString)
 		if err != nil {
 			fmt.Println(err)
 		}
-		existingUser.Dob = t
+		existingUser.Dob = dobTime
 		existingUser.Name = formData.Name
 
 		UpdateData := db.GetDmManager().UpdateOneByStrId(collection.Customer, existingUser.ID.Hex(), existingUser)

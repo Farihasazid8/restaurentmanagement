@@ -49,16 +49,16 @@ func (employee Employee) Save(context echo.Context) error {
 		return common.GenerateErrorResponse(context, nil, "Email already exists")
 	}
 
-	var t time.Time
+	var dobTime time.Time
 	layout := "2006-01-02"
-	t, err := time.Parse(layout, formData.DobString)
+	dobTime, err := time.Parse(layout, formData.DobString)
 	if err != nil {
 		fmt.Println(err)
 	}
 	var payload = Employee{
 		ID:       primitive.NewObjectID(),
 		Name:     formData.Name,
-		Dob:      t,
+		Dob:      dobTime,
 		Email:    formData.Email,
 		Salary:   formData.Salary,
 		Position: formData.Position,

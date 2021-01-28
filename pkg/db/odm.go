@@ -244,7 +244,6 @@ func (dm *dmManager) UpdateOneByObjId(collectionName string, objId primitive.Obj
 		filter,
 		update,
 	)
-
 	return err
 }
 
