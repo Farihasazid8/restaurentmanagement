@@ -9,9 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"reflect"
-	"restaurentManagement/config"
-	_ "restaurentManagement/pkg/type"
-	_type "restaurentManagement/pkg/type"
+	"restaurentmanagement/config"
+	_ "restaurentmanagement/pkg/type"
+	_type "restaurentmanagement/pkg/type"
 	"sync"
 	"time"
 )

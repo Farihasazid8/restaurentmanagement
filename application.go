@@ -1,9 +1,9 @@
 package main
 
 import (
-	"restaurentManagement/config"
-	"restaurentManagement/pkg"
-	"restaurentManagement/pkg/db"
+	"restaurentmanagement/config"
+	"restaurentmanagement/pkg"
+	"restaurentmanagement/pkg/db"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package pkg
 import (
 	"github.com/labstack/echo"
 	"net/http"
-	v1 "restaurentManagement/pkg/v1/model"
+	v1 "restaurentmanagement/pkg/v1/model"
 )
 
 func Routes(e *echo.Echo) {

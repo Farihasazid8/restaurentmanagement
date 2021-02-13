@@ -7,11 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"reflect"
-	"restaurentManagement/common"
-	"restaurentManagement/pkg/db"
-	"restaurentManagement/pkg/db/collection"
-	"restaurentManagement/pkg/utils"
-	"restaurentManagement/pkg/utils/dto"
+	"restaurentmanagement/common"
+	"restaurentmanagement/pkg/db"
+	"restaurentmanagement/pkg/db/collection"
+	"restaurentmanagement/pkg/utils"
+	"restaurentmanagement/pkg/utils/dto"
 	"time"
 )
 
@@ -43,7 +43,7 @@ func (employee Employee) Save(context echo.Context) error {
 		fmt.Println("Invalid Email")
 		return common.GenerateErrorResponse(context, nil, "Invalid Email")
 	}
-	filter := bson.D{{"userEmail", formData.Email}}
+	filter := bson.D{{"employeeEmail", formData.Email}}
 	response := db.GetDmManager().FindOne(collection.Employee, filter, reflect.TypeOf(Employee{}))
 	if response != nil {
 		return common.GenerateErrorResponse(context, nil, "Email already exists")

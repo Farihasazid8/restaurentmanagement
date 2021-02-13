@@ -1,4 +1,5 @@
 package model
+
 import (
 	"fmt"
 	"github.com/labstack/echo"
@@ -6,10 +7,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"reflect"
-	"restaurentManagement/common"
-	"restaurentManagement/pkg/db"
-	"restaurentManagement/pkg/db/collection"
-	"restaurentManagement/pkg/utils/dto"
+	"restaurentmanagement/common"
+	"restaurentmanagement/pkg/db"
+	"restaurentmanagement/pkg/db/collection"
+	"restaurentmanagement/pkg/utils/dto"
 	"time"
 )
 func BillRouter(g *echo.Group) {
@@ -33,21 +34,16 @@ func (bill Bill) Save(context echo.Context) error {
 	}
 	var totalBillAmount float32 = 0.0
 	var dishObj []Dishes
-	//i := 0
 	for _, value := range formData.OrderedDishes {
 		var objId, _ = primitive.ObjectIDFromHex(value)
-		fmt.Sprintf("%T", objId)
 		filter := bson.D{{"_id", objId}}
-
 		response := db.GetDmManager().FindOne(collection.Dishes, filter, reflect.TypeOf(Dishes{}))
 		if response != nil {
 			existingDish := *response.(*Dishes)
-			dishObj = append(dishObj,existingDish)
-			//i++
+			dishObj = append(dishObj,*response.(*Dishes))
 			totalBillAmount += existingDish.Price
 			//update ingredient quantity
 			for key, value := range existingDish.RequiredIngredients {
-				fmt.Println("Key:", key, "Value:", value)
 				filter := bson.D{{"ingredientName", key}}
 				response := db.GetDmManager().FindOne(collection.Ingredients, filter, reflect.TypeOf(Ingredient{}))
 				if response != nil {
@@ -64,7 +60,6 @@ func (bill Bill) Save(context echo.Context) error {
 			}
 		}
 	}
-	fmt.Println(dishObj)
 	var payload = Bill{
 		ID:            primitive.NewObjectID(),
 		BillingAmount: totalBillAmount,
@@ -81,8 +76,10 @@ func (bill Bill) Save(context echo.Context) error {
 }
 func (bill Bill) FindAll(context echo.Context) error {
 	findAllData, err := db.GetDmManager().FindAll(collection.Bill, reflect.TypeOf(Bill{}), bson.D{{"status", "V"}}, nil, 0, -1)
+	fmt.Println("DAta-",findAllData)
 	if err != nil {
 		log.Println("[Error]:", err)
+		fmt.Println(findAllData)
 		return common.GenerateErrorResponse(context, nil, "Failed!")
 	}
 	return common.GenerateSuccessResponse(context, findAllData, "Success")
@@ -91,7 +88,6 @@ func (bill Bill) FindAll(context echo.Context) error {
 func (bill Bill) GetById(context echo.Context) error {
 	id := context.Param("id")
 	getByIdData := db.GetDmManager().FindOneByStrId(collection.Bill, id, reflect.TypeOf(Bill{}))
-	fmt.Println(getByIdData)
 	if getByIdData == nil {
 		return common.GenerateErrorResponse(context, nil, "Failed!")
 	}

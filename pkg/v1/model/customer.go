@@ -7,11 +7,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"reflect"
-	"restaurentManagement/common"
-	"restaurentManagement/pkg/db"
-	"restaurentManagement/pkg/db/collection"
-	"restaurentManagement/pkg/utils"
-	"restaurentManagement/pkg/utils/dto"
+	"restaurentmanagement/common"
+	"restaurentmanagement/pkg/db"
+	"restaurentmanagement/pkg/db/collection"
+	"restaurentmanagement/pkg/utils"
+	"restaurentmanagement/pkg/utils/dto"
 	"time"
 )
 
