@@ -40,7 +40,7 @@ RUN useradd -ms /bin/bash klovercloud
 WORKDIR /home/klovercloud
 
 COPY --from=builder /app/bin .
-COPY --from=builder /app/views ./views
+#COPY --from=builder /app/views ./views
 
 EXPOSE 8080
 
